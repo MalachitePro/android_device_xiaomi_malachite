@@ -1,0 +1,12 @@
+diff --git a/build/hidl_interface.go b/build/hidl_interface.go
+index b517e84..fc8fe31 100644
+--- a/build/hidl_interface.go
++++ b/build/hidl_interface.go
+@@ -898,6 +898,7 @@ var allAospHidlInterfaces = map[string]bool{
+ 	"android.frameworks.cameraservice.service@2.0": true,
+ 	"android.frameworks.cameraservice.service@2.1": true,
+ 	"android.frameworks.cameraservice.service@2.2": true,
++	"android.frameworks.displayservice@1.0":      true, // malachite: vendor blobs (MTK camera) still link it; restored locally
+ 	"android.frameworks.sensorservice@1.0":         true,
+ 	"android.frameworks.stats@1.0":                 true,
+ 	"android.frameworks.vr.composer@1.0":           true,

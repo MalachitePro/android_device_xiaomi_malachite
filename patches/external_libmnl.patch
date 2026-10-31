@@ -1,0 +1,14 @@
+diff --git a/Android.bp b/Android.bp
+index 2351544..24859ad 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -23,7 +23,8 @@ cc_library_shared {
+         "-Werror",
+         "-Wno-gnu-pointer-arith",
+     ],
+-    vendor_available: true,
++    // malachite: MediaTek ships its own GNSS libmnl.so in /vendor/lib64 (blob libmnl_mtk).
++    // Do not build an AOSP vendor variant: it would install to the same path.
+ 
+     // b/479773959: Restrict visibility once Soong support is available.
+     // For now, use __subpackages__ to unblock development.

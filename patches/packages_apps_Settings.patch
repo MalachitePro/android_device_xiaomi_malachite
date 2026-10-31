@@ -1,0 +1,42 @@
+diff --git a/res/values/rom_branding_strings.xml b/res/values/rom_branding_strings.xml
+new file mode 100644
+index 0000000..5baef72
+--- /dev/null
++++ b/res/values/rom_branding_strings.xml
+@@ -0,0 +1,7 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <string name="rom_developer_title" translatable="false">Developer</string>
++    <string name="rom_developer_summary" translatable="false">HUNTER[RKJAAT]</string>
++    <string name="rom_support_title" translatable="false">Support</string>
++    <string name="rom_support_summary" translatable="false">t.me/Malachite_Pro</string>
++</resources>
+diff --git a/res/xml/my_device_info.xml b/res/xml/my_device_info.xml
+index 9148a9d..1cad71a 100644
+--- a/res/xml/my_device_info.xml
++++ b/res/xml/my_device_info.xml
+@@ -153,6 +153,24 @@
+             android:summary="@string/summary_placeholder"
+             settings:enableCopying="true"
+             settings:controller="com.android.settings.deviceinfo.firmwareversion.LineageVersionDetailPreferenceController"/>
++
++        <!-- Developer -->
++        <Preference
++            android:key="rom_developer"
++            android:order="43"
++            android:title="@string/rom_developer_title"
++            android:summary="@string/rom_developer_summary"
++            android:selectable="false"/>
++
++        <!-- Support -->
++        <Preference
++            android:key="rom_support"
++            android:order="43"
++            android:title="@string/rom_support_title"
++            android:summary="@string/rom_support_summary">
++            <intent android:action="android.intent.action.VIEW"
++                    android:data="https://t.me/Malachite_Pro"/>
++        </Preference>
+     </PreferenceCategory>
+ 
+     <PreferenceCategory

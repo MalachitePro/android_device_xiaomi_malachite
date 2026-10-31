@@ -1,0 +1,73 @@
+diff --git a/Android.bp b/Android.bp
+index 5900cfc..e61a8cc 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -2,6 +2,10 @@ soong_namespace {
+     imports: [
+         "hardware/google/interfaces",
+         "hardware/google/pixel",
++        // A17 Pixel repo: usb/ declares its own namespace (libpixelusb-aidl lives there)
++        "hardware/google/pixel/usb",
++        // A17 Pixel repo: pixelstats/ declares its own namespace (libpixelstats, pixelatoms-cpp)
++        "hardware/google/pixel/pixelstats",
+     ],
+ }
+ 
+diff --git a/wlan/wpa_supplicant_8_lib/Android.bp b/wlan/wpa_supplicant_8_lib/Android.bp
+index 7b81488..8d46f48 100644
+--- a/wlan/wpa_supplicant_8_lib/Android.bp
++++ b/wlan/wpa_supplicant_8_lib/Android.bp
+@@ -13,10 +13,16 @@ cc_library_static {
+     // (struct wpa_supplicant, wpa_global, wpa_ssid), whose layout depends on
+     // CONFIG_* flags. Compile it with the flags of the wpa_supplicant binary it
+     // is linked into, or it reads fields at the wrong offsets.
+-    defaults: ["wpa_supplicant_cflags_default"],
++    // wpa_supplicant_usd_defaults adds -DCONFIG_NAN_USD and -DCONFIG_NAN, both
++    // of which change struct wpa_driver_nl80211_data / i802_bss. With only
++    // CONFIG_NAN_USD the library read drv->first_bss at a stale offset (NULL),
++    // and wpa_supplicant crashed in wpa_driver_mediatek_set_country as soon as
++    // the country code was set, so Wi-Fi never came up.
++    defaults: [
++        "wpa_supplicant_cflags_default",
++        "wpa_supplicant_usd_defaults",
++    ],
+     cflags: [
+-        // Set by wpa_supplicant_usd_defaults, which also adds sources.
+-        "-DCONFIG_NAN_USD",
+         "-DCONFIG_MTK_P2P_SIGMA",
+         // The shared defaults add -Werror; this imported code is not
+         // warning-clean against them.
+diff --git a/wlan/wpa_supplicant_8_lib/mediatek_driver_cmd_nl80211.c b/wlan/wpa_supplicant_8_lib/mediatek_driver_cmd_nl80211.c
+index 2d6980d..d16e7fe 100644
+--- a/wlan/wpa_supplicant_8_lib/mediatek_driver_cmd_nl80211.c
++++ b/wlan/wpa_supplicant_8_lib/mediatek_driver_cmd_nl80211.c
+@@ -351,7 +351,7 @@ static int wpa_driver_nl80211_testmode(void* priv, const u8* data, size_t data_l
+     params = (struct wpa_driver_testmode_params*)data;
+ 
+     /* Mask version field */
+-    index = params->hdr.index & BITS(0, 23);
++    index = params->hdr.index & MTK_BITS(0, 23);
+ 
+     switch (index) {
+         case NL80211_TESTMODE_STATISTICS: {
+diff --git a/wlan/wpa_supplicant_8_lib/mediatek_driver_nl80211.h b/wlan/wpa_supplicant_8_lib/mediatek_driver_nl80211.h
+index 877ba4b..292846f 100644
+--- a/wlan/wpa_supplicant_8_lib/mediatek_driver_nl80211.h
++++ b/wlan/wpa_supplicant_8_lib/mediatek_driver_nl80211.h
+@@ -8,13 +8,13 @@
+ 
+ #include <linux/wireless.h>
+ 
+-#ifndef BITS
++#ifndef MTK_BITS
+ /* Eddie */
+-/* bits range: for example BITS(16,23) = 0xFF0000
++/* bits range: for example MTK_BITS(16,23) = 0xFF0000
+  *   ==>  (BIT(m)-1)   = 0x0000FFFF     ~(BIT(m)-1)   => 0xFFFF0000
+  *   ==>  (BIT(n+1)-1) = 0x00FFFFFF
+  */
+-#define BITS(m, n) (~(BIT(m) - 1) & ((BIT(n) - 1) | BIT(n)))
++#define MTK_BITS(m, n) (~(BIT(m) - 1) & ((BIT(n) - 1) | BIT(n)))
+ #endif /* BIT */
+ 
+ #define OUI_MTK 0x000CE7

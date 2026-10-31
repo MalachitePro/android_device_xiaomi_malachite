@@ -1,0 +1,45 @@
+diff --git a/app/src/main/java/org/lineageos/glimpse/viewmodels/IntentsViewModel.kt b/app/src/main/java/org/lineageos/glimpse/viewmodels/IntentsViewModel.kt
+index b529e14..b6b0579 100644
+--- a/app/src/main/java/org/lineageos/glimpse/viewmodels/IntentsViewModel.kt
++++ b/app/src/main/java/org/lineageos/glimpse/viewmodels/IntentsViewModel.kt
+@@ -16,6 +16,7 @@ import android.util.Log
+ import androidx.lifecycle.viewModelScope
+ import kotlinx.coroutines.Dispatchers
+ import kotlinx.coroutines.ExperimentalCoroutinesApi
++import kotlinx.coroutines.delay
+ import kotlinx.coroutines.flow.MutableStateFlow
+ import kotlinx.coroutines.flow.SharingStarted
+ import kotlinx.coroutines.flow.first
+@@ -278,7 +279,22 @@ class IntentsViewModel(application: Application) : GlimpseViewModel(application)
+         return when (type) {
+             MediaType.ALBUM -> mediaRepository.album(uri).first().map { it.first }
+             MediaType.IMAGE,
+-            MediaType.VIDEO -> mediaRepository.media(uri).first()
++            MediaType.VIDEO -> {
++                // A camera keeps a new picture "pending" while it is still being
++                // processed, and other apps cannot see it until then. Wait for it
++                // instead of giving up and closing right after opening.
++                var status = mediaRepository.media(uri).first()
++                var tries = 0
++                while (
++                    status is RequestStatus.Error &&
++                    uri.authority == MediaStore.AUTHORITY &&
++                    tries++ < PENDING_RETRIES
++                ) {
++                    delay(PENDING_RETRY_DELAY_MS)
++                    status = mediaRepository.media(uri).first()
++                }
++                status
++            }
+         }.let {
+             when (it) {
+                 is RequestStatus.Loading -> throw Exception(
+@@ -459,5 +475,8 @@ class IntentsViewModel(application: Application) : GlimpseViewModel(application)
+ 
+     companion object {
+         private val LOG_TAG = IntentsViewModel::class.simpleName!!
++
++        private const val PENDING_RETRIES = 12
++        private const val PENDING_RETRY_DELAY_MS = 500L
+     }
+ }
