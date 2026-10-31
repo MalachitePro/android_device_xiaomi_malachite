@@ -7,3 +7,6 @@
 # Stock grants { getattr map execute execute_no_trans } here; only execute
 # is needed to map libraries, so running files from app data stays denied.
 allow platform_app app_data_file:file execute;
+
+# Same for apps that run in platform_app_36 (Android 17).
+allow platform_app_36 app_data_file:file execute;

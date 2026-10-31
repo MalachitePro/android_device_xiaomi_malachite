@@ -9,6 +9,7 @@ r_dir_file(vendor_hal_citsensorservice_xiaomi_default, dri_device)
 r_dir_file(vendor_hal_citsensorservice_xiaomi_default, gpu_device)
 r_dir_file(vendor_hal_citsensorservice_xiaomi_default, mnt_vendor_file)
 rw_dir_file(vendor_hal_citsensorservice_xiaomi_default, hf_manager_device)
+allow vendor_hal_citsensorservice_xiaomi_default hf_manager_device:chr_file { rw_file_perms ioctl };
 rw_dir_file(vendor_hal_citsensorservice_xiaomi_default, input_device)
 rw_dir_file(vendor_hal_citsensorservice_xiaomi_default, nvcfg_file)
 rw_dir_file(vendor_hal_citsensorservice_xiaomi_default, sysfs_leds)

@@ -5,3 +5,15 @@ binder_call(hal_aidlbgservice, platform_app)
 binder_call(platform_app, hal_fingerprint_default)
 
 allow platform_app vendor_hal_fingerprint_service_xiaomi:service_manager find;
+
+# Android 17 runs platform signed apps that target SDK <= 36 in
+# platform_app_36, not platform_app, so the rules above never applied to
+# them. The Xiaomi camera was denied the BG service there, its MIVI path
+# never got the full size picture back and only the small preview was saved.
+hal_client_domain(platform_app_36, hal_aidlbgservice)
+
+binder_call(platform_app_36, hal_aidlbgservice)
+binder_call(hal_aidlbgservice, platform_app_36)
+binder_call(platform_app_36, hal_fingerprint_default)
+
+allow platform_app_36 vendor_hal_fingerprint_service_xiaomi:service_manager find;

@@ -10,6 +10,10 @@ $(call inherit-product, $(SRC_TARGET_DIR)/product/full_base_telephony.mk)
 # Inherit from device makefile.
 $(call inherit-product, device/xiaomi/malachite/device.mk)
 
+# Developer branding (shown in About phone via the LineageOS version string; '[' ']' are avoided here
+# because they end up in file names and get globbed by the shell). The exact name is in ro.build.user.
+TARGET_UNOFFICIAL_BUILD_ID := HUNTER-RKJAAT
+
 # Inherit some common LineageOS stuff.
 $(call inherit-product, vendor/lineage/config/common_full_phone.mk)
 
@@ -30,3 +34,7 @@ PRODUCT_BUILD_PROP_OVERRIDES += \
     DeviceProduct=$(PRODUCT_SYSTEM_NAME)
 
 PRODUCT_GMS_CLIENTID_BASE := android-xiaomi
+
+PRODUCT_PRODUCT_PROPERTIES += \
+    ro.rom.developer=HUNTER[RKJAAT] \
+    ro.rom.support=https://t.me/Malachite_Pro

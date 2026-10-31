@@ -13,7 +13,9 @@
 
 #include <poll.h>
 #include <sys/ioctl.h>
+#include <atomic>
 #include <fstream>
+#include <unistd.h>
 #include <mutex>
 #include <thread>
 
@@ -131,6 +133,7 @@ class XiaomiMalachiteUdfpsHandler : public UdfpsHandler {
                     if (pressed && !fodEnabled_) {
                         continue;
                     }
+                    pressHandled_ = pressed;
                     setLocalHbm(pressed);
                 }
                 // Outside the lock: the HAL may call back into onAcquired().
@@ -285,6 +288,8 @@ class XiaomiMalachiteUdfpsHandler : public UdfpsHandler {
     // With the screen off or in AOD SystemUI also stops handling touches, but
     // screen-off unlock needs the touch IC's FOD detection.
     bool displayOff_ = false;
+    // A press was already forwarded to the HAL / local HBM (cleared when the finger lifts).
+    std::atomic<bool> pressHandled_{false};
 
     void setLocalHbm(bool on) {
         disp_local_hbm_req req;
@@ -296,13 +301,44 @@ class XiaomiMalachiteUdfpsHandler : public UdfpsHandler {
     }
 
     void applyTouchFodLocked() {
-        bool on = fodRequested_ && (!ignoreTouches_ || displayOff_);
+        // Screen off/AOD: keep the touch IC's FOD detection armed even though the HAL is not asking for a
+        // finger yet. Without it fod_press_status never changes, the UDFPS long-press doze sensor never
+        // fires (this kernel has no fod_longpress_gesture_enabled node) and the screen never wakes.
+        bool on = (fodRequested_ && (!ignoreTouches_ || displayOff_)) || displayOff_;
+        const bool wasOn = fodEnabled_;
         fodEnabled_ = on;
         if (!on) {
             setLocalHbm(false);
         }
         int buf[MAX_BUF_SIZE] = {TOUCH_ID, Touch_Fod_Enable, on ? 1 : 0};
         ioctl(touch_fd_.get(), TOUCH_IOC_SET_CUR_VALUE, &buf);
+        if (on && !wasOn) {
+            recheckPressAfterArming();
+        }
+    }
+
+    // A finger that is already on the sensor when FOD gets armed (e.g. screen turned off with the
+    // finger resting on it) produces no change event on fod_press_status, so neither the local HBM
+    // spot nor the HAL would ever be started: the user only sees the dark UDFPS overlay.
+    void recheckPressAfterArming() {
+        std::thread([this]() {
+            usleep(50000);
+            int fd = open(FOD_PRESS_STATUS_PATH, O_RDONLY);
+            if (fd < 0) {
+                return;
+            }
+            bool pressed = readBool(fd);
+            close(fd);
+            {
+                std::lock_guard<std::mutex> lock(fodLock_);
+                if (!pressed || !fodEnabled_ || pressHandled_) {
+                    return;
+                }
+                pressHandled_ = true;
+                setLocalHbm(true);
+            }
+            mDevice->extCmd(mDevice, COMMAND_FOD_PRESS_STATUS, PARAM_FOD_PRESSED);
+        }).detach();
     }
 
     void setTouchFod(bool on) {

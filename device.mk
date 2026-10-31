@@ -31,6 +31,11 @@ PRODUCT_SHIPPING_API_LEVEL := 34
 PRODUCT_SOONG_NAMESPACES += \
     $(DEVICE_PATH) \
     hardware/google/pixel \
+    hardware/google/pixel/health \
+    hardware/google/pixel/pixelstats \
+    hardware/google/pixel/power-libperfmgr \
+    hardware/google/pixel/thermal \
+    hardware/google/pixel/usb \
     hardware/google/interfaces \
     hardware/lineage/interfaces/power-libperfmgr \
     hardware/mediatek \
@@ -557,3 +562,9 @@ PRODUCT_PACKAGES += \
 
 # Inherit the proprietary files
 $(call inherit-product, vendor/xiaomi/malachite/malachite-vendor.mk)
+
+
+# SoundTrigger3 HAL impl (blob) dlopen()s this at runtime from the vendor audio service; build-time
+# shared_libs omits it (AIDL V4/V5 conflict), so install the vendor variant explicitly (make-name has the .vendor suffix).
+PRODUCT_PACKAGES += \
+    libaudio_aidl_conversion_common_ndk.vendor
