@@ -4,9 +4,11 @@ Android 17 port of the malachite device tree. Port, fixes and release builds: HU
 Support: https://t.me/Malachite_Pro
 
 ## Credits
-- The Android 16 (LineageOS 23.2) device tree, vendor files and hardware repo are from malachite-project, puhboo, mt6878-devs and cmdr-chara. Their commits are kept in this history. Thanks to them.
+- Device tree history (kept in this repo): claxten10, cmdr-chara, ArianK16a, Mashopy, bengris32, luk1337 and others, via malachite-project (maintained by noamtu123). Also puhboo and mt6878-devs, who worked on the Android 16 tree.
+- Kernel and vendor blobs: cmdr-chara (Chara), malachite-project. Kernel source: https://github.com/malachite-project/kernel_manifest-6.1 (GPLv2)
+- Fingerprint / UDFPS HAL (hardware/xiaomi): SebaUbuntu, bgcngm, ArianK16a, Demon000, luk1337 and the LineageOS Xiaomi contributors.
 - LineageOS team for the base.
-- Prebuilt kernel: https://github.com/malachite-project/kernel_manifest-6.1 (GPLv2)
+- Android 17 port, fixes and release builds: HUNTER[RKJAAT] (MalachitePro).
 
 If you use this tree for your own ROM, please keep these credits.
 
